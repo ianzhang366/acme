@@ -53,7 +53,7 @@ func appendTags(id int, name string, tags []byte) {
 		return
 	}
 
-	if strings.HasSuffix(string(curTag), string(tags)) {
+	if strings.Contains(string(curTag), string(tags)) {
 		return
 	}
 
