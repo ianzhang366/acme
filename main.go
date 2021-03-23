@@ -53,6 +53,12 @@ func appendTags(id int, name string, tags []byte) {
 		return
 	}
 
+	fs := strings.Split(string(curTag), " ")
+
+	if strings.HasSuffix(fs[0], "+watch") {
+		return
+	}
+
 	if strings.Contains(string(curTag), string(tags)) {
 		return
 	}
