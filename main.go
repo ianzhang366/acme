@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -9,7 +10,9 @@ import (
 	"9fans.net/go/acme"
 )
 
-var defaultTagFile string
+const (
+	Sep = "\n"
+)
 
 var tagFile = flag.String("f", "./tags", "append tags from the given file to acme windows")
 
@@ -20,9 +23,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tags, err := ioutil.ReadFile(*tagFile)
+	ts, err := ioutil.ReadFile(*tagFile)
 	if err != nil {
 		log.Fatalf("failed to log tag files, err: %v", err)
+	}
+
+	tags := strings.Split(string(ts), Sep)
+	if len(tags) == 0 {
+		return
 	}
 
 	for {
@@ -38,7 +46,7 @@ func main() {
 	}
 }
 
-func appendTags(id int, name string, tags []byte) {
+func appendTags(id int, name string, tags []string) {
 	w, err := acme.Open(id, nil)
 	if err != nil {
 		log.Print("failed to open file", err)
@@ -59,9 +67,13 @@ func appendTags(id int, name string, tags []byte) {
 		return
 	}
 
-	if strings.Contains(string(curTag), string(tags)) {
-		return
+	for _, tag := range tags {
+		if strings.Contains(string(curTag), string(tag)) {
+			continue
+		}
+
+		nTag := fmt.Sprintf(" %s", tag)
+		w.Write("tag", []byte(nTag))
 	}
 
-	w.Write("tag", tags)
 }
