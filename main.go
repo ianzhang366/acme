@@ -49,11 +49,16 @@ func main() {
 func appendTags(id int, name string, tags []string) {
 	w, err := acme.Open(id, nil)
 	if err != nil {
-		log.Print("failed to open file", err)
+		log.Print("failed to open file ", err)
 		return
 	}
 
 	defer w.CloseFiles()
+
+	if w == nil {
+		log.Print("it seems we got an empty winid")
+		return
+	}
 
 	curTag, err := w.ReadAll("tag")
 	if err != nil {
