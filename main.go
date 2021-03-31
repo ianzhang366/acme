@@ -60,7 +60,9 @@ func appendTags(id int, name string, tags []string) {
 		return
 	}
 
-	curTag, err := w.ReadAll("tag")
+	curTag := make([]byte, 1024)
+	_, err = w.Read("tag", curTag)
+	//	curTag, err := w.ReadAll("tag")
 	if err != nil {
 		log.Print(err)
 		return
@@ -80,5 +82,4 @@ func appendTags(id int, name string, tags []string) {
 		nTag := fmt.Sprintf(" %s", tag)
 		w.Write("tag", []byte(nTag))
 	}
-
 }
