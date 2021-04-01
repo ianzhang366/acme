@@ -1,3 +1,0 @@
-	win
-|fld :0 :$ "Edit =" "Edit ,d"
-|c+ '#' |c- '#' |i+ |i- gb gt glt+ rg+

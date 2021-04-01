@@ -1,4 +1,4 @@
-module github.com/ianzhang366/acme-tag
+module github.com/ianzhang366/acme
 
 go 1.16
 

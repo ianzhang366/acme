@@ -1,0 +1,17 @@
+win
+:0
+:$
+h
+hh
+|fld
+"Edit ="
+"Edit ,d"
+|c+ '#'
+|c- '#'
+|i+
+|i-
+gb
+gt
+glt+
+rg+
+w+
