@@ -40,4 +40,5 @@ func reformat(id int, name string) {
 	}
 
 	w.Ctl("get")
+	w.Ctl("put")
 }
