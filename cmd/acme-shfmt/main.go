@@ -1,14 +1,26 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 
 	"9fans.net/go/acme"
 )
 
+var version = flag.Bool("v", false, "run gofmt on the entire file after Put")
+
 func main() {
+	flag.Parse()
+
+	if *version {
+		fmt.Fprintln(os.Stdout, "version: v0.0.8-c")
+		return
+	}
+
 	l, err := acme.Log()
 	if err != nil {
 		log.Fatal(err)
