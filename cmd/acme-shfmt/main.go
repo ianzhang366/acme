@@ -33,10 +33,15 @@ func reformat(id int, name string) {
 	}
 	defer w.CloseFiles()
 
-	_, err = exec.Command("shfmt", "-sr", "-w", name).CombinedOutput()
+	//per google style guide https://google.github.io/styleguide/shellguide.html
+	o, err := exec.Command("shfmt", "-i", "2", "-sr", "-w", name).CombinedOutput()
 	if err != nil {
 		w.Errf("shfmt error: %s", err)
 		return
+	}
+
+	if len(o) != 0 {
+		w.Errf("shfmt: %s", string(o))
 	}
 
 	w.Ctl("get")
