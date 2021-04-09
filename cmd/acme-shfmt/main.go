@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"9fans.net/go/acme"
@@ -13,11 +14,17 @@ import (
 
 var version = flag.Bool("v", false, "run gofmt on the entire file after Put")
 
+// want to call this within the following case
+// 1. running in background watch for acme script files and shfmt on put
+// we can read all files and parse the first line
+// 2. call by script and mirror the default shfmt behaviour
+// have shell flag then pass the rest
+
 func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Fprintln(os.Stdout, "version: v0.0.8-c")
+		fmt.Fprintln(os.Stdout, "version: v0.0.8-d")
 		return
 	}
 
@@ -31,7 +38,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if event.Name != "" && event.Op == "put" && (strings.HasSuffix(event.Name, ".sh") || strings.HasSuffix(event.Name, "_sh")) {
+		if event.Name != "" && event.Op == "put" && (strings.HasSuffix(event.Name, ".sh") || (filepath.Ext(event.Name) == "")) {
 			reformat(event.ID, event.Name)
 		}
 	}
@@ -44,6 +51,21 @@ func reformat(id int, name string) {
 		return
 	}
 	defer w.CloseFiles()
+
+	firstLine := make([]byte, 512)
+	// here the read is read from one of acme's window file, tag, data, boday...
+	_, err = w.Read("body", firstLine)
+	if err != nil {
+		w.Errf("fail to read the first line of file, error %v", err)
+		return
+	}
+
+	// pre google shell guide
+	// if the script is lib, then the file name ends with .sh
+	// if the script is executable, then the file will start with sengbang without ext .sh
+	if !strings.HasSuffix(name, ".sh") && !strings.HasPrefix(string(firstLine), "#!/bin/bash") {
+		return
+	}
 
 	//per google style guide https://google.github.io/styleguide/shellguide.html
 	o, err := exec.Command("shfmt", "-i", "2", "-sr", "-w", name).CombinedOutput()
