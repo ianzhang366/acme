@@ -19,6 +19,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"9fans.net/go/acme"
 )
 
 //I want the make this one
@@ -64,10 +66,10 @@ func main() {
 	}
 	file = fullpath
 
-	//	r, err := acme.Log()
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
+	r, err := acme.Log()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Printf("editing %s", file)
 
@@ -76,14 +78,13 @@ func main() {
 		log.Fatalf("executing plumb: %v\n%s", err, out)
 	}
 
-	//	for {
-	//		ev, err := r.Read()
-	//		if err != nil {
-	//			log.Fatalf("reading acme log: %v", err)
-	//		}
-	//		if ev.Op == "del" && ev.Name == file {
-	//			break
-	//		}
-	//	}
-
+	for {
+		ev, err := r.Read()
+		if err != nil {
+			log.Fatalf("reading acme log: %v", err)
+		}
+		if ev.Op == "del" && ev.Name == file {
+			break
+		}
+	}
 }

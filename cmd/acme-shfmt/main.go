@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Fprintln(os.Stdout, "version: v0.0.8-d")
+		fmt.Fprintln(os.Stdout, "version: v0.0.8-g")
 		return
 	}
 
@@ -68,14 +68,11 @@ func reformat(id int, name string) {
 	}
 
 	//per google style guide https://google.github.io/styleguide/shellguide.html
-	o, err := exec.Command("shfmt", "-i", "2", "-sr", "-w", name).CombinedOutput()
+	// err is the command return code.
+	o, err := exec.Command("shfmt", "-i", "4", "-sr", "-w", name).CombinedOutput()
 	if err != nil {
-		w.Errf("shfmt error: %s", err)
+		w.Errf("shfmt: %serror: %v\n", string(o), err)
 		return
-	}
-
-	if len(o) != 0 {
-		w.Errf("shfmt: %s", string(o))
 	}
 
 	w.Ctl("get")
