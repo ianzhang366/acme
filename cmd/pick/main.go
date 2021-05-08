@@ -20,13 +20,18 @@ focused window id.
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"9fans.net/go/acme"
+	p9client "github.com/fhs/9fans-go/plan9/client"
 )
 
 const (
@@ -242,7 +247,11 @@ func main() {
 }
 
 func GetCurrentWindow() (*acme.Win, error) {
-	winStr := os.Getenv("winid")
+
+	winStr, err := dailAcmeFocusWin(filepath.Join(p9client.Namespace(), "acmefocused"))
+	if err != nil {
+		return nil, err
+	}
 	winID, err := strconv.Atoi(winStr)
 	if err != nil {
 		return nil, err
@@ -253,6 +262,24 @@ func GetCurrentWindow() (*acme.Win, error) {
 	}
 
 	return w, nil
+}
+
+func dailAcmeFocusWin(addr string) (string, error) {
+	winid := os.Getenv("winid")
+	if winid == "" {
+
+		conn, err := net.Dial("unix", addr)
+		if err != nil {
+			return "", fmt.Errorf("$winid is empty and could not dial acmefocused: %v", err)
+		}
+		defer conn.Close()
+		b, err := ioutil.ReadAll(conn)
+		if err != nil {
+			return "", fmt.Errorf("$winid is empty and could not read acmefocused: %v", err)
+		}
+		return string(bytes.TrimSpace(b)), nil
+	}
+	return winid, nil
 }
 
 // A handler fucntion that processes an Acme event and takes an action. Passthrough must be explicitly
