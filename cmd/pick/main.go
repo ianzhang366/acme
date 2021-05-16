@@ -258,7 +258,7 @@ func GetCurrentWindow() (*acme.Win, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("debug: winstr %v\n", winStr)
+
 	winID, err := strconv.Atoi(winStr)
 	if err != nil {
 		return nil, err
