@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Fprintln(os.Stdout, "version: v0.0.9")
+		fmt.Fprintln(os.Stdout, "version: v0.0.9-1")
 		return
 	}
 
