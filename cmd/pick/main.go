@@ -27,17 +27,17 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"9fans.net/go/acme"
-	p9client "github.com/fhs/9fans-go/plan9/client"
 )
 
 const (
 	lineOffset = 1 // assuming single line prompt
 	windowName = "+pick"
-	VERSION    = "0.0.1"
+	VERSION    = "0.0.2"
 )
 
 var (
@@ -254,7 +254,7 @@ func main() {
 }
 
 func GetCurrentWindow() (*acme.Win, error) {
-	winStr, err := dailAcmeFocusWin(filepath.Join(p9client.Namespace(), "acmefocused"))
+	winStr, err := dailAcmeFocusWin(filepath.Join(getAcmeNamespace(), "acmefocused"))
 	if err != nil {
 		return nil, err
 	}
@@ -269,6 +269,36 @@ func GetCurrentWindow() (*acme.Win, error) {
 	}
 
 	return w, nil
+}
+
+var dotZero = regexp.MustCompile(`\A(.*:\d+)\.0\z`)
+
+// Namespace returns the path to the name space directory.
+
+func getAcmeNamespace() string {
+	ns := os.Getenv("NAMESPACE")
+	if ns != "" {
+		return ns
+	}
+
+	disp := os.Getenv("DISPLAY")
+	if disp == "" {
+		// No $DISPLAY? Use :0.0 for non-X11 GUI (OS X).
+		disp = ":0.0"
+	}
+
+	// Canonicalize: xxx:0.0 => xxx:0.
+	if m := dotZero.FindStringSubmatch(disp); m != nil {
+		disp = m[1]
+	}
+
+	// Turn /tmp/launch/:0 into _tmp_launch_:0 (OS X 10.5).
+	disp = strings.Replace(disp, "/", "_", -1)
+
+	// NOTE: plan9port creates this directory on demand.
+	// Maybe someday we'll need to do that.
+
+	return fmt.Sprintf("/tmp/ns.%s.%s", os.Getenv("USER"), disp)
 }
 
 func dailAcmeFocusWin(addr string) (string, error) {
