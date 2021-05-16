@@ -37,6 +37,7 @@ import (
 const (
 	lineOffset = 1 // assuming single line prompt
 	windowName = "+pick"
+	VERSION    = "0.0.1"
 )
 
 var (
@@ -44,6 +45,7 @@ var (
 	returnLineNum = flag.Bool("n", false, "return the line number of the selected line, not the line itself")
 	numberLines   = flag.Bool("N", false, "prefix each line with its line number")
 	prompt        = flag.String("p", "> ", "prompt to present to the user when taking input")
+	version       = flag.Bool("v", false, "prefix each line with its line number")
 )
 
 type linePicker struct {
@@ -215,6 +217,11 @@ func main() {
 
 	flag.Parse()
 
+	if *version {
+		fmt.Println(VERSION)
+		os.Exit(0)
+	}
+
 	if *readFromStdIn {
 		s := bufio.NewScanner(os.Stdin)
 		for s.Scan() {
@@ -247,11 +254,11 @@ func main() {
 }
 
 func GetCurrentWindow() (*acme.Win, error) {
-
 	winStr, err := dailAcmeFocusWin(filepath.Join(p9client.Namespace(), "acmefocused"))
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("debug: winstr %v\n", winStr)
 	winID, err := strconv.Atoi(winStr)
 	if err != nil {
 		return nil, err
@@ -267,7 +274,6 @@ func GetCurrentWindow() (*acme.Win, error) {
 func dailAcmeFocusWin(addr string) (string, error) {
 	winid := os.Getenv("winid")
 	if winid == "" {
-
 		conn, err := net.Dial("unix", addr)
 		if err != nil {
 			return "", fmt.Errorf("$winid is empty and could not dial acmefocused: %v", err)
