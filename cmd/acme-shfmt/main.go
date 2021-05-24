@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"9fans.net/go/acme"
+	"github.com/ianzhang366/acme/pkg/utils"
 )
 
 var version = flag.Bool("v", false, "run gofmt on the entire file after Put")
@@ -24,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Fprintln(os.Stdout, "version: v0.0.9-1")
+		fmt.Fprintf(os.Stdout, "acme shfmt service version: %s \n", utils.Version())
 		return
 	}
 

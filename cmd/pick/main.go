@@ -20,18 +20,13 @@ focused window id.
 
 import (
 	"bufio"
-	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"net"
 	"os"
-	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"9fans.net/go/acme"
+	"github.com/ianzhang366/acme/pkg/utils"
 )
 
 const (
@@ -191,7 +186,7 @@ func readFromAcme() ([]string, error) {
 		err error
 	)
 
-	if w, err = GetCurrentWindow(); err != nil {
+	if w, err = utils.GetCurrentWindow(); err != nil {
 		return nil, err
 	}
 	defer w.CloseFiles()
@@ -218,7 +213,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println(VERSION)
+		fmt.Fprintf(os.Stdout, "pick service version: %s \n", utils.Version())
 		os.Exit(0)
 	}
 
@@ -251,71 +246,6 @@ func main() {
 	} else {
 		fmt.Println(selection)
 	}
-}
-
-func GetCurrentWindow() (*acme.Win, error) {
-	winStr, err := dailAcmeFocusWin(filepath.Join(getAcmeNamespace(), "acmefocused"))
-	if err != nil {
-		return nil, err
-	}
-
-	winID, err := strconv.Atoi(winStr)
-	if err != nil {
-		return nil, err
-	}
-	w, err := acme.Open(winID, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return w, nil
-}
-
-var dotZero = regexp.MustCompile(`\A(.*:\d+)\.0\z`)
-
-// Namespace returns the path to the name space directory.
-
-func getAcmeNamespace() string {
-	ns := os.Getenv("NAMESPACE")
-	if ns != "" {
-		return ns
-	}
-
-	disp := os.Getenv("DISPLAY")
-	if disp == "" {
-		// No $DISPLAY? Use :0.0 for non-X11 GUI (OS X).
-		disp = ":0.0"
-	}
-
-	// Canonicalize: xxx:0.0 => xxx:0.
-	if m := dotZero.FindStringSubmatch(disp); m != nil {
-		disp = m[1]
-	}
-
-	// Turn /tmp/launch/:0 into _tmp_launch_:0 (OS X 10.5).
-	disp = strings.Replace(disp, "/", "_", -1)
-
-	// NOTE: plan9port creates this directory on demand.
-	// Maybe someday we'll need to do that.
-
-	return fmt.Sprintf("/tmp/ns.%s.%s", os.Getenv("USER"), disp)
-}
-
-func dailAcmeFocusWin(addr string) (string, error) {
-	winid := os.Getenv("winid")
-	if winid == "" {
-		conn, err := net.Dial("unix", addr)
-		if err != nil {
-			return "", fmt.Errorf("$winid is empty and could not dial acmefocused: %v", err)
-		}
-		defer conn.Close()
-		b, err := ioutil.ReadAll(conn)
-		if err != nil {
-			return "", fmt.Errorf("$winid is empty and could not read acmefocused: %v", err)
-		}
-		return string(bytes.TrimSpace(b)), nil
-	}
-	return winid, nil
 }
 
 // A handler fucntion that processes an Acme event and takes an action. Passthrough must be explicitly
